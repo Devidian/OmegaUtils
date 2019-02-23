@@ -1,9 +1,9 @@
 'use strict';
 import { Db, MongoClient, MongoError } from 'mongodb';
 
-import { cfg } from '../../config';
 import { LOGTAG } from '../models/Config';
 import { ConfigLoader } from '../tools/ConfigLoader';
+import { MongoDBConfig } from '../models/MongoConfig';
 
 /**
  *
@@ -20,9 +20,9 @@ export abstract class MongoApp {
 	protected isMaster: boolean = !process.connected;
 	protected _isReady: boolean = false;
 
-	private get cfg(): MongoConfig {
-		const C: MongoConfig = ConfigLoader.getInstance();
-		return C || null;
+	private get cfg(): MongoDBConfig {
+		const CL = ConfigLoader.getInstance<MongoDBConfig>();
+		return CL ? CL.cfg : null;
 	}
 
 	/**
@@ -52,7 +52,7 @@ export abstract class MongoApp {
 	 */
 	protected mongoAfterConnect(): void {
 		this._isReady = true;
-		console.log(LOGTAG.INFO, '[BOOT]', `${this.isMaster ? 'Master' : `Worker`} MongoDB connected! PID: ${process.pid}`);
+		!this.cfg.log.info ? null : console.log(LOGTAG.INFO, '[BOOT]', `${this.isMaster ? 'Master' : `Worker`} MongoDB connected! PID: ${process.pid}`);
 	}
 
 	/**
@@ -72,28 +72,28 @@ export abstract class MongoApp {
 	 * @memberof MongoApp
 	 */
 	protected mongoConnect(): void {
-		MongoClient.connect(cfg.mongo.url, cfg.mongo.options).then((MC: MongoClient) => {
+		MongoClient.connect(this.cfg.mongo.url, this.cfg.mongo.options).then((MC: MongoClient) => {
 			try {
 				this.MongoFailState = null;
 				this.MongoClient = MC;
-				this.MongoDatabase = MC.db(cfg.mongo.db);
+				this.MongoDatabase = MC.db(this.cfg.mongo.db);
 
 				// Socket timeout means the driver tries to reconnect x times before closeing the socket
 				MC.on('timeout', () => { // connectTimeoutMS seems to trigger this after lost connection
 					this.MongoFailState = "MongoCollection socket timeout!";
-					console.log('[E]', "A MongoCollection socket timeout occurred!");
+					console.log(LOGTAG.ERROR, "A MongoCollection socket timeout occurred!");
 				});
 
 				// After close we need to reconnect manually
 				MC.on('close', () => {
 					this.MongoFailState = "MongoCollection socket closed!";
-					console.log('[E]', "A MongoCollection socket closed!");
+					console.log(LOGTAG.ERROR, "A MongoCollection socket closed!");
 					this.mongoOnSocketClose();
 				});
 
 				MC.on('error', (err: MongoError) => {
 					this.MongoFailState = err.message;
-					console.log('[E]', err.message);
+					console.log(LOGTAG.ERROR, err.message);
 				});
 
 				MC.on('reconnect', () => {
@@ -104,12 +104,12 @@ export abstract class MongoApp {
 				this.mongoAfterConnect();
 			} catch (error) {
 				this.MongoFailState = "Failed to setup MongoCollection collections";
-				console.log('[E]', error);
+				console.log(LOGTAG.ERROR, error);
 				process.exit(3001);
 			}
 		}).catch(e => {
 			this.MongoFailState = "Failed to connect to MongoCollection";
-			console.log('[E]', this.MongoFailState);
+			console.log(LOGTAG.ERROR, this.MongoFailState);
 			setTimeout(() => this.mongoConnect(), 1000);
 		});
 	}

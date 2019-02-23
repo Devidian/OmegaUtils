@@ -7,17 +7,15 @@ export enum LOGTAG{
 
 export interface Config {
 	log: {
+		devel: boolean, 	// output development messages
 		debug: boolean, 	// output debug messages
 		warn: boolean,		// output warning messages
 		info: boolean		// output info messages
 	}
-	master: {
+	app: {
 		title: string,		// name of application master process
 	},
-	cli: {
-		commands: string[]
-	},
-	worker: {
-		title: string,		// Basename of app worker processes
+	cli?: {
+		commands: string[]	// list of commands allowed by cli
 	}
 };
