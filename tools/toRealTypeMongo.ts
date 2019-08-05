@@ -8,13 +8,13 @@ import { ObjectID } from "mongodb";
  * @param {any} input
  * @returns {boolean|number|string}
  */
-export function toRealTypeMongo(input): any {
+export function toRealTypeMongo(input: any): any {
 	if (Array.isArray(input)) {
 		for (const key in input) {
 			// console.log(key);
 			input[key] = toRealTypeMongo(input[key]);
 		}
-		
+
 		return input;
 	}
 	if(input === Object(input)){

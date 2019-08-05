@@ -1,12 +1,12 @@
 // Filesystem for reading ini files
 import { readFileSync, accessSync, watch as watchFs } from "fs";
 import { resolve } from "path";
-// Configuration shema
+// Configuration schema
 import { Config, LOGTAG } from "../models/Config";
 import { EventEmitter } from "events";
 
 /**
- * 
+ *
  *
  * @export
  * @class ConfigLoader
@@ -25,9 +25,9 @@ export class ConfigLoader<T extends Config> extends EventEmitter {
 	 * @returns {ConfigLoader<TC>}
 	 * @memberof ConfigLoader
 	 */
-	public static getInstance<TC extends Config>(configRoot?: string): ConfigLoader<TC> {
+	public static getInstance<TC extends Config>(configRoot?: string, configType?: string): ConfigLoader<TC> {
 		if (!ConfigLoader.highlander && configRoot) {
-			ConfigLoader.highlander = new ConfigLoader<TC>(configRoot);
+			ConfigLoader.highlander = new ConfigLoader<TC>(configRoot, configType);
 		}
 		return ConfigLoader.highlander;
 	}
@@ -39,7 +39,7 @@ export class ConfigLoader<T extends Config> extends EventEmitter {
 	 * @param {string} configRoot
 	 * @memberof ConfigLoader
 	 */
-	private constructor(private configRoot: string) {
+	private constructor(private configRoot: string, private configType: string = "config") {
 		super();
 		const pathJSON = resolve(this.configRoot, "config.default.json");
 
@@ -47,7 +47,7 @@ export class ConfigLoader<T extends Config> extends EventEmitter {
 			accessSync(pathJSON);
 			this.useJSON();
 		} catch (error) {
-			console.log(LOGTAG.ERROR,'[ConfigLoader]',error);
+			console.log(LOGTAG.ERROR, '[ConfigLoader]', error);
 			throw "Unable to initialize config";
 		}
 	}
@@ -59,7 +59,7 @@ export class ConfigLoader<T extends Config> extends EventEmitter {
 	 * @memberof ConfigLoader
 	 */
 	private useJSON(): void {
-		const pathJSON = resolve(this.configRoot, "config.json");
+		const pathJSON = resolve(this.configRoot, this.configType+".json");
 		let content = null;
 		try {
 			accessSync(pathJSON);
@@ -75,7 +75,7 @@ export class ConfigLoader<T extends Config> extends EventEmitter {
 		}
 
 		watchFs(this.configRoot, (e: string, f: string) => {
-			if (f == "config.json") {
+			if (f == this.configType+".json") {
 				// delay to prevent Unexpected end of JSON input error
 				setTimeout(() => {
 					try {
@@ -95,8 +95,3 @@ export class ConfigLoader<T extends Config> extends EventEmitter {
 	}
 
 }
-
-
-
-
-

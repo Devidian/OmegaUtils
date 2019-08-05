@@ -1,8 +1,10 @@
 /**
  * undefined check
  *
- * @param p
+ * @export
+ * @param {*} p
+ * @returns {boolean}
  */
-export function isset(p): boolean {
+export function isset(p: any): boolean {
 	return p !== undefined;
 }
