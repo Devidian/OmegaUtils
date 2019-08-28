@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.1] - 2019-08-28
+### Added
+- Config interface has now `app.system` property
+
 ## [0.2.0] - 2019-08-05
 ### Fixed
 - cfg property of MongoApp was not correct
