@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.2] - 2019-09-03
+### Changed
+- Logger now looks up config on execution
+
 ## [0.2.1] - 2019-08-28
 ### Added
 - Config interface has now `app.system` property
