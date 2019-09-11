@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.3] - 2019-09-11
+### Fixed
+- bugs in `MongoApp` and `MongoCollection`
+
 ## [0.2.2] - 2019-09-03
 ### Changed
 - Logger now looks up config on execution

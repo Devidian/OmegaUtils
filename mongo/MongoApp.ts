@@ -4,6 +4,7 @@ import { Db, MongoClient, MongoError } from 'mongodb';
 import { LOGTAG } from '../models/Config';
 import { ConfigLoader } from '../tools/ConfigLoader';
 import { MongoDBConfig } from '../models/MongoConfig';
+import { Logger } from '../tools/Logger';
 
 /**
  *
@@ -52,7 +53,7 @@ export abstract class MongoApp {
 	 */
 	protected mongoAfterConnect(): void {
 		this._isReady = true;
-		!this.cfg.log.info ? null : console.log(LOGTAG.INFO, '[BOOT]', `${this.isMaster ? 'Master' : `Worker`} MongoDB connected! PID: ${process.pid}`);
+		Logger(111,"MongoApp:mongoAfterConnect",`${this.isMaster ? 'Master' : `Worker`} MongoDB connected! PID: ${process.pid}`);
 	}
 
 	/**

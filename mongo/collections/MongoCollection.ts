@@ -2,9 +2,9 @@ import { createHmac } from "crypto";
 import { ChangeStream, ChangeStreamOptions, Collection, CommonOptions, Cursor, Db, DeleteWriteOpResultObject, FilterQuery, ObjectID, ReplaceOneOptions, UpdateWriteOpResult } from "mongodb";
 import { types } from "util";
 import { GeneralObject } from "..";
-import { LOGTAG } from "../../models/Config";
-import { ConfigLoader } from "../../tools/ConfigLoader";
 import { MongoDBConfig } from "../../models/MongoConfig";
+import { ConfigLoader } from "../../tools/ConfigLoader";
+import { Logger } from "../../tools/Logger";
 
 
 /** Help Class with general methods
@@ -128,7 +128,7 @@ export class MongoCollection<TC extends GeneralObject> {
 					}
 				}
 			} catch (error) {
-				console.log(LOGTAG.ERROR, `[MongoCollection::deepUpdate]`, error);
+				Logger(911, `[MongoCollection::deepUpdate]`, error);
 			}
 		}
 		return result;
@@ -198,7 +198,7 @@ export class MongoCollection<TC extends GeneralObject> {
 				return doc2save;
 			}
 		}).then((to) => {
-			var oQuery = {
+			var oQuery: FilterQuery<any> = {
 				_id: doc2save._id
 			};
 			let mod = Object.assign({}, to);
@@ -233,20 +233,20 @@ export class MongoCollection<TC extends GeneralObject> {
 	 * @returns {Promise<T>}
 	 * @memberof MongoCollection
 	 */
-	public updateOne(filter: FilterQuery<TC>, update: Object, options?: ReplaceOneOptions): Promise<TC> {
+	public updateOne(filter: FilterQuery<any>, update: Object, options?: ReplaceOneOptions): Promise<TC> {
 		if (!this.Collection) {
 			return Promise.reject('No Collection set!');
 		}
 		return this.Collection.updateOne(filter, update, options || { upsert: true }).catch((E) => {
 			if (E.code == 11000) {
-				console.log('[E]', '[updateOne]', `[${this.Collection.collectionName}]`, E.message, '[CATCHED]');
+				Logger(911, '[updateOne]', `[${this.Collection.collectionName}]`, E.message, '[CATCHED]');
 				return true;
 			} else {
-				console.log('[E]', '[updateOne]', `[${this.Collection.collectionName}]`, E.message);
+				Logger(911, '[updateOne]', `[${this.Collection.collectionName}]`, E.message);
 				throw "Error on update One";
 			}
 		}).then(() => {
-			return this.Collection.findOne(filter);
+			return this.Collection.findOne<TC>(filter);
 		});
 	}
 
