@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.2.4] - 2019-09-16
+### Added
+- new class `AppInfo` with static method to fetch app-version from `package.json` (more methods may follow)
+
 ## [0.2.3] - 2019-09-11
 ### Fixed
 - bugs in `MongoApp` and `MongoCollection`
