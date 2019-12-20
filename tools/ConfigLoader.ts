@@ -2,7 +2,8 @@
 import { readFileSync, accessSync, watch as watchFs } from "fs";
 import { resolve } from "path";
 // Configuration schema
-import { Config, LOGTAG } from "../models/Config";
+import { Config } from "../models/Config";
+import { LOGTAG } from "../models/LOGTAG";
 import { EventEmitter } from "events";
 
 /**

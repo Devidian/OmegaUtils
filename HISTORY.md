@@ -1,5 +1,11 @@
 ## [Unreleased]
 
+## [0.3.0] - 2019-12-20
+### Added
+- new enum `Loglevel` for default log-levels
+### Changed
+- enum `LOGTAG` seperated into new file (may break code!)
+
 ## [0.2.4] - 2019-09-16
 ### Added
 - new class `AppInfo` with static method to fetch app-version from `package.json` (more methods may follow)

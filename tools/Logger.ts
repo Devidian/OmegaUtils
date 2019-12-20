@@ -1,4 +1,5 @@
-import { LOGTAG, Config } from "../models/Config";
+import { Config } from "../models/Config";
+import { LOGTAG } from "../models/LOGTAG";
 import { resolve } from "path";
 
 export async function Logger(level: number, source: string, ...messages: any[]): Promise<void> {
