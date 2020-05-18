@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+
+## [0.3.1] - 2020-05-18
+### Removed
+- 'reconnect' event Listener for mongo connection (is deprecated)
+
 ## [0.3.0] - 2019-12-20
 ### Added
 - new enum `Loglevel` for default log-levels

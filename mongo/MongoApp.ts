@@ -1,10 +1,10 @@
 'use strict';
 import { Db, MongoClient, MongoError } from 'mongodb';
 
-import { LOGTAG } from '../models/Config';
 import { ConfigLoader } from '../tools/ConfigLoader';
 import { MongoDBConfig } from '../models/MongoConfig';
 import { Logger } from '../tools/Logger';
+import { LOGTAG } from '../models/LOGTAG';
 
 /**
  *
@@ -97,10 +97,10 @@ export abstract class MongoApp {
 					console.log(LOGTAG.ERROR, err.message);
 				});
 
-				MC.on('reconnect', () => {
-					this.MongoFailState = null;
-					console.log("MongoCollection connection restored!");
-				});
+				// MC.on('reconnect', () => {
+				// 	this.MongoFailState = null;
+				// 	console.log("MongoCollection connection restored!");
+				// });
 
 				this.mongoAfterConnect();
 			} catch (error) {
