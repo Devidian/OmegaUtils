@@ -1,5 +1,8 @@
 ## [Unreleased]
 
+## [0.4.0] - 2021-05-10
+### Changed
+- complete refactoring with new stuff
 
 ## [0.3.1] - 2020-05-18
 ### Removed
