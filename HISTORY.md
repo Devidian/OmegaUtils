@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.4.1] - 2021-05-11
+### Fixed
+- some bugs and deprecations
+
 ## [0.4.0] - 2021-05-10
 ### Changed
 - complete refactoring with new stuff

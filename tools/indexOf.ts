@@ -1,4 +1,4 @@
-import { deepEqual } from "assert";
+import { deepStrictEqual } from 'assert';
 
 /**
  * searches an array of objects for a specific object with a property value (searchTerm)
@@ -9,10 +9,10 @@ import { deepEqual } from "assert";
  * @param {string} property
  * @returns {number}
  */
-export function indexOf(inArray: {}[], searchTerm: any, property: string): number {
+export function indexOf(inArray: { [key: string]: any }[], searchTerm: any, property: string): number {
 	for (var i = 0, len = inArray.length; i < len; i++) {
 		try {
-			deepEqual(inArray[i][property], searchTerm, 'Not equal');
+			deepStrictEqual(inArray[i][property], searchTerm, 'Not equal');
 			return i;
 		} catch (error) {
 			// not equal

@@ -10,6 +10,8 @@ import { Logger } from "./Logger";
 export class RandomTable {
     protected static randomMap: Map<string, number[]> = new Map<string, number[]>();
 
+    protected static logger: Logger = new Logger(RandomTable.name);
+
     /**
      *
      *
@@ -64,8 +66,9 @@ export class RandomTable {
      * @memberof RandomTable
      */
     public static getBuffer(index: string): Buffer {
-        const b = Buffer.alloc(length * 8);
-        RandomTable.getTable(index).forEach((n, i) => {
+        const table = RandomTable.getTable(index);
+        const b = Buffer.alloc(table.length * 8);
+        table.forEach((n, i) => {
             b.writeDoubleBE(n, i * 8);
         });
         return b;
@@ -86,7 +89,7 @@ export class RandomTable {
             const v = number % t.length; // if table is 128 long and we want number 130 we startover
             return t[v];
         } catch (error) {
-            Logger(511,"RandomTable",`no table with index ${index} returning Math.random() instead!`);
+            RandomTable.logger.warn(`no table with index ${index} returning Math.random() instead!`);
             return Math.random();
         }
     }
