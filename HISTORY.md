@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.5.0] - 2021-07-26
+### Changed
+- [breaking] now using native typescript from mongodb driver `4.x`
+
 ## [0.4.1] - 2021-05-11
 ### Fixed
 - some bugs and deprecations

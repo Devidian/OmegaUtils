@@ -5,14 +5,13 @@ import {
 	ChangeStream,
 	ChangeStreamOptions,
 	Collection,
-	CommonOptions,
-	DeleteWriteOpResultObject,
-	FilterQuery,
+	DeleteResult,
+	Document,
 	MongoClient,
 	ObjectId,
-	ReplaceOneOptions,
-	UpdateQuery,
-	UpdateWriteOpResult,
+	UpdateFilter,
+	UpdateOptions,
+	UpdateResult,
 } from 'mongodb';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -102,35 +101,35 @@ export class MongoCollection<TC extends BaseEntity> {
 	/**
 	 *
 	 *
-	 * @param {FilterQuery<TC>} Filter
-	 * @returns {Promise<UpdateWriteOpResult>}
+	 * @param {UpdateFilter<TC>} Filter
+	 * @returns {Promise<Document | UpdateResult>}
 	 * @memberof MongoCollection
 	 */
-	public async softRemove(Filter: FilterQuery<TC>): Promise<UpdateWriteOpResult> {
+	public async softRemove(Filter: UpdateFilter<TC>): Promise<Document | UpdateResult> {
 		const now = new Date();
-		const uq: UpdateQuery<TC> = { $set: { removedOn: now } } as any;
+		const uq: UpdateFilter<TC> = { $set: { removedOn: now } } as any;
 		return this.collection.updateMany(Filter, uq);
 	}
 
 	/**
 	 *
 	 *
-	 * @param {FilterQuery<TC>} Filter
-	 * @returns {Promise<UpdateWriteOpResult>}
+	 * @param {UpdateFilter<TC>} Filter
+	 * @returns {Promise<Document | UpdateResult>}
 	 * @memberof MongoCollection
 	 */
-	public async restore(Filter: FilterQuery<TC>): Promise<UpdateWriteOpResult> {
+	public async restore(Filter: UpdateFilter<TC>): Promise<Document | UpdateResult> {
 		return this.collection.updateMany(Filter, { $unset: { removedOn: 1 } } as any);
 	}
 
 	/**
 	 *
 	 *
-	 * @param {FilterQuery<TC>} Filter
-	 * @returns {Promise<DeleteWriteOpResultObject>}
+	 * @param {UpdateFilter<TC>} Filter
+	 * @returns {Promise<DeleteResult>}
 	 * @memberof MongoCollection
 	 */
-	public async hardRemove(Filter: FilterQuery<TC>): Promise<DeleteWriteOpResultObject> {
+	public async hardRemove(Filter: UpdateFilter<TC>): Promise<DeleteResult> {
 		return this.collection.deleteMany(Filter);
 	}
 
@@ -244,7 +243,7 @@ export class MongoCollection<TC extends BaseEntity> {
 				}
 			})
 			.then((to) => {
-				var oQuery: FilterQuery<any> = {
+				var oQuery: UpdateFilter<TC> = {
 					_id: doc2save._id,
 				};
 				let mod = Object.assign({}, to);
@@ -279,13 +278,13 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * passthrough updateOne method with object response
 	 *
 	 *
-	 * @param {FilterQuery<T>} filter
+	 * @param {UpdateFilter<T>} filter
 	 * @param {Object} update
-	 * @param {ReplaceOneOptions} [options]
+	 * @param {UpdateOptions} [options]
 	 * @returns {Promise<T>}
 	 * @memberof MongoCollection
 	 */
-	public async updateOne(filter: FilterQuery<any>, update: Object, options?: ReplaceOneOptions): Promise<TC | null> {
+	public async updateOne(filter: UpdateFilter<TC>, update: Object, options?: UpdateOptions): Promise<TC | null> {
 		return (
 			this.collection
 				.updateOne(filter, update, options || { upsert: true })
@@ -308,17 +307,17 @@ export class MongoCollection<TC extends BaseEntity> {
 	/**
 	 * passthrough updateMany method for current collection
 	 *
-	 * @param {FilterQuery<TC>} filter
+	 * @param {UpdateFilter<TC>} filter
 	 * @param {Object} update
 	 * @param {(CommonOptions & { upsert?: boolean })} [options]
-	 * @returns {Promise<UpdateWriteOpResult>}
+	 * @returns {Promise<Document | UpdateResult>}
 	 * @memberof MongoCollection
 	 */
 	public async updateMany(
-		filter: FilterQuery<TC>,
+		filter: UpdateFilter<TC>,
 		update: Object,
-		options?: CommonOptions & { upsert?: boolean },
-	): Promise<UpdateWriteOpResult> {
+		options?: UpdateOptions,
+	): Promise<Document | UpdateResult> {
 		return this.collection.updateMany(filter, update, options);
 	}
 
@@ -336,11 +335,11 @@ export class MongoCollection<TC extends BaseEntity> {
 	/**
 	 * Counts documents after filtering
 	 *
-	 * @param {FilterQuery<TC>} Filter
+	 * @param {UpdateFilter<TC>} Filter
 	 * @returns {Promise<number>}
 	 * @memberof MongoCollection
 	 */
-	public async countItems(Filter: FilterQuery<TC>): Promise<number> {
+	public async countItems(Filter: UpdateFilter<TC>): Promise<number> {
 		return this.collection.countDocuments(Filter, {});
 	}
 
@@ -358,11 +357,11 @@ export class MongoCollection<TC extends BaseEntity> {
 	 *
 	 *
 	 * @protected
-	 * @param {FilterQuery<TC>} Filter
-	 * @returns {FilterQuery<TC>}
+	 * @param {UpdateFilter<TC>} Filter
+	 * @returns {UpdateFilter<TC>}
 	 * @memberof MongoCollection
 	 */
-	protected classFilter(Filter: FilterQuery<TC>): FilterQuery<TC> {
+	protected classFilter(Filter: UpdateFilter<TC>): UpdateFilter<TC> {
 		let f = Filter;
 		if (this.useClassFilter) {
 			const item = new this.defaultFactory();
@@ -376,11 +375,11 @@ export class MongoCollection<TC extends BaseEntity> {
 	/**
 	 * get items matching the Filter (wrapper for find)
 	 *
-	 * @param {FilterQuery<TC>} Filter
+	 * @param {UpdateFilter<TC>} Filter
 	 * @returns {Promise<TC[]>}
 	 * @memberof MongoCollection
 	 */
-	public async findItems(Filter: FilterQuery<TC>): Promise<TC[]> {
+	public async findItems(Filter: UpdateFilter<TC>): Promise<TC[]> {
 		if (isNotEmptyObject(Filter)) {
 			return this.collection
 				.find(this.classFilter(Filter))
@@ -410,18 +409,18 @@ export class MongoCollection<TC extends BaseEntity> {
 		}
 
 		return this.collection
-			.findOne<TC>(this.classFilter({ _id: uid } as FilterQuery<TC>))
+			.findOne<TC>(this.classFilter({ _id: uid } as UpdateFilter<TC>))
 			.then((item) => this.toObject(item) as TC);
 	}
 
 	/**
-	 * find a single item (first matching) by FilterQuery (wrapper for findOne)
+	 * find a single item (first matching) by UpdateFilter (wrapper for findOne)
 	 *
-	 * @param {FilterQuery<TC>} Filter
+	 * @param {UpdateFilter<TC>} Filter
 	 * @returns {(Promise<TC | null>)}
 	 * @memberof MongoCollection
 	 */
-	public async findItem(Filter: FilterQuery<TC>): Promise<TC | null> {
+	public async findItem(Filter: UpdateFilter<TC>): Promise<TC | null> {
 		try {
 			const item = await this.collection.findOne<TC>(this.classFilter(Filter));
 			return this.toObject(item) as TC;

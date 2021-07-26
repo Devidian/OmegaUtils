@@ -1,4 +1,4 @@
-import { IndexSpecification } from 'mongodb';
+import { CreateIndexesOptions, IndexDescription, IndexSpecification } from 'mongodb';
 import { of } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
 import { BaseEntity } from '../entities/base.entity';
@@ -9,18 +9,21 @@ export function DatabaseCollection<T extends BaseEntity>(
 	collectionName: string,
 	classFactory: new (item?: T) => T,
 	classFilter = false,
-	indices: IndexSpecification[] = [],
+	indices: { spec: IndexSpecification; options?: CreateIndexesOptions }[] = [],
 ): any {
 	return async (target: Object, propertyKey: string) => {
 		const factories: { [key: string]: new (item?: T) => T } = {};
 		factories[classFactory.name] = classFactory;
 		let collectionRef: MongoCollection<T> = null;
-		mongoClient.pipe(filter((x) => x?.isConnected())).subscribe(async (val) => {
+		mongoClient.pipe(filter((x) => !!x)).subscribe(async (val) => {
 			if (val && !collectionRef) {
 				collectionRef = (() => new MongoCollection<T>(factories, collectionName, classFilter))();
 				if (indices.length > 0) {
 					collectionRef.$collection.pipe(first((f) => !!f)).subscribe((col) => {
-						col.createIndexes(indices);
+						for (const index of indices) {
+							col.createIndex(index.spec, index.options||{});
+							
+						}
 					});
 				}
 			}

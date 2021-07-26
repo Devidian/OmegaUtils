@@ -1,15 +1,12 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, MongoClientOptions } from 'mongodb';
 import { BehaviorSubject } from 'rxjs';
 import { EnvVars } from '../enums';
 import { Environment } from './Environment';
 import { Logger } from './Logger';
 
-const options = {
-	native_parser: true,
-	useNewUrlParser: true,
-	useUnifiedTopology: true,
+const options:MongoClientOptions = {	
 	// ssl: false,
-	appname: Environment.getString(EnvVars.DB_APPNAME) || 'NodeApp',
+	appName: Environment.getString(EnvVars.DB_APPNAME) || 'NodeApp',
 };
 
 export const mongoClient = new BehaviorSubject<MongoClient>(null);
