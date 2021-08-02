@@ -1,5 +1,17 @@
 ## [Unreleased]
 
+## [0.6.0] - 2021-07-26
+### Added
+- new decorator `@Default(defaultValue)` for use with classTransformer
+### Changed
+- `BaseEntity.plain` renamed to `BaseEntity.toPlain`
+- `BaseEntity.toPlain` 
+  - now uses `classToPlain`
+  - args changed to array of groups
+### Fixed
+- `BaseRepository.isReady` due to driver changes in last update
+- `sendEmail` don't try sending email if key is not set
+
 ## [0.5.0] - 2021-07-26
 ### Changed
 - [breaking] now using native typescript from mongodb driver `4.x`

@@ -16,6 +16,11 @@ if (!apiKey) {
 export const sendEmail = async (from: string, to: string, subject: string, text: string, html: string) => {
 	const msg = { to, from, subject, text, html };
 
+	if (!apiKey?.startsWith('SG.')) {
+		logger.warn(`Seendgrid not available! No email sent to ${to}`);
+		return;
+	}
+
 	try {
 		const response = await sgMail.send(msg);
 		return response;

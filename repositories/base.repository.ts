@@ -1,4 +1,5 @@
 import { ChangeStream, ChangeStreamOptions, ObjectId } from 'mongodb';
+import { firstValueFrom } from 'rxjs';
 import { BaseEntity } from '../entities';
 import { ExtendedLogger } from '../tools/ExtendedLogger';
 import { MongoCollection } from '../tools/MongoCollection';
@@ -8,7 +9,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
 	protected abstract logger: ExtendedLogger;
 
 	public get isReady(): Promise<boolean> {
-        return this.collectionRef.$isReady.toPromise();
+		return firstValueFrom(this.collectionRef.$isReady);
 	}
 
 	public watch(pipeline?: object[], options?: ChangeStreamOptions): Promise<ChangeStream> {
@@ -23,8 +24,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
 		if (!ObjectId.isValid(id)) {
 			throw new Error('Property id is not a valid ObjectId');
 		}
-		const _id = new ObjectId(id + '');
-		return this.collectionRef.findItemById(_id);
+		return this.collectionRef.findItemById(new ObjectId(id + ''));
 	}
 
 	public findItemsByIds(idList: string[]): Promise<T[]> {
@@ -32,7 +32,6 @@ export abstract class BaseRepository<T extends BaseEntity> {
 			throw new Error('Property id is not a valid ObjectId');
 		}
 		const oids = idList.map((id) => new ObjectId(id + ''));
-		//@ts-ignore
 		return this.collectionRef.findItems({ _id: { $in: oids } });
 	}
 
@@ -40,9 +39,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
 		if (!ObjectId.isValid(id)) {
 			throw new Error('Property id is not a valid ObjectId');
 		}
-		const _id = new ObjectId(id + '');
-		//@ts-ignore
-		return this.collectionRef.softRemove({ _id });
+		return this.collectionRef.softRemove({ _id: new ObjectId(id + '') });
 	}
 
 	public save(entity: T): Promise<T> {

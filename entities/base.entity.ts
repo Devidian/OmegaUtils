@@ -1,23 +1,31 @@
-import { IsDate, IsOptional } from "class-validator";
-import { ObjectId } from "mongodb";
-import { MongoObject } from "..";
+import { classToPlain, Exclude, Expose, Transform } from 'class-transformer';
+import { IsDate, IsOptional } from 'class-validator';
+import { ObjectId } from 'mongodb';
+import { MongoObject } from '..';
 
 export abstract class BaseEntity implements MongoObject {
-
-	_id: ObjectId = new ObjectId();
-
-	@IsDate()
-	createdOn: Date | null = null;
+	@Exclude({ toPlainOnly: true })
+	@Transform(({ obj }) => obj?._id, { toClassOnly: true })
+	_id: ObjectId;
 
 	@IsDate()
-	lastModifiedOn: Date | null = null;
+	createdOn: Date;
+
+	@IsDate()
+	lastModifiedOn: Date;
 
 	@IsOptional()
 	@IsDate()
-	removedOn?: Date | null | undefined = null;
+	removedOn?: Date;
 
+	@Expose()
 	public get id(): string {
-		return this._id + '';
+		return this._id?.toHexString();
+	}
+
+	public set id(id: string) {
+		if (!ObjectId.isValid(id)) return;
+		this._id = new ObjectId(id);
 	}
 
 	public get className(): string {
@@ -28,13 +36,7 @@ export abstract class BaseEntity implements MongoObject {
 		// void
 	}
 
-	public plain(showPrivate: boolean = false): { [key: string]: any } {
-		return {
-			id: this.id,
-			createdOn: this.createdOn,
-			lastModifiedOn: this.lastModifiedOn,
-			...(this.removedOn ? { removedOn: this.removedOn } : null),
-			className: this.className
-		}
+	public toPlain(groups: string[] = ['other']): { [key: string]: any } {
+		return classToPlain(this, { groups });
 	}
 }

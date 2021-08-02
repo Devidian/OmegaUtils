@@ -11,14 +11,4 @@ export class DBLogEntity extends BaseEntity {
     public messages: string[] = [];
     @IsString()
     public processTitle: string = process.title;
-
-    public plain(showPrivate: boolean = false): { [key: string]: any } {
-        return {
-            ...super.plain(),
-            loglevel: this.loglevel,
-            context: this.context,
-            messages: this.messages,
-            processTitle: this.processTitle,
-        }
-    }
 }

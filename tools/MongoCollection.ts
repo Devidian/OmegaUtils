@@ -1,4 +1,3 @@
-import { plainToClass } from 'class-transformer';
 import { isNotEmptyObject } from 'class-validator';
 import { createHmac } from 'crypto';
 import {
@@ -11,7 +10,7 @@ import {
 	ObjectId,
 	UpdateFilter,
 	UpdateOptions,
-	UpdateResult,
+	UpdateResult
 } from 'mongodb';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -19,6 +18,7 @@ import { types } from 'util';
 import { MongoDB } from '../decorators/mongodb.decorator';
 import { BaseEntity } from '../entities/base.entity';
 import { EnvVars } from '../enums';
+import { EntityFactory } from '../factories';
 import { Environment } from './Environment';
 
 /** Help Class with general methods
@@ -84,16 +84,14 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoDB
 	 */
 	public save(doc: TC): Promise<TC | null> {
-		const N = new Date();
-		// ensure ObjectID
-		doc._id =
-			ObjectId.isValid(doc._id) && new ObjectId(doc._id + '') + '' == doc._id + ''
-				? new ObjectId(doc._id + '')
-				: doc._id; // in case of a valid object id that was incorrectly string, convert it
 		if (!doc._id) {
 			doc._id = new ObjectId();
 		}
-		doc.createdOn = doc.createdOn || N;
+		if (!ObjectId.isValid(doc._id)) {
+			throw new Error('_id must be ObjectId');
+		}
+
+		doc.createdOn = doc.createdOn || new Date();
 
 		return this.atomicSave({ ...doc, className: doc.className });
 	}
@@ -231,7 +229,7 @@ export class MongoCollection<TC extends BaseEntity> {
 	 */
 	public atomicSave(doc2save: TC): Promise<TC | null> {
 		// let isUpdate = false;
-		return this.findItemById(doc2save._id)
+		return this.findItemById(new ObjectId(doc2save._id))
 			.then((doc: TC | null) => {
 				if (doc) {
 					let from: any = Object.assign({}, doc2save);
@@ -244,7 +242,7 @@ export class MongoCollection<TC extends BaseEntity> {
 			})
 			.then((to) => {
 				var oQuery: UpdateFilter<TC> = {
-					_id: doc2save._id,
+					_id: new ObjectId(doc2save._id),
 				};
 				let mod = Object.assign({}, to);
 
@@ -263,14 +261,14 @@ export class MongoCollection<TC extends BaseEntity> {
 						fields++;
 					}
 				}
-				let SOI = Object.assign(to.class ? { class: to.class } : {}, oQuery, { createdOn: new Date() });
+				let SOI = Object.assign({}, oQuery, { createdOn: new Date() });
 				mod.lastModifiedOn = new Date();
 
 				return fields
 					? this.updateOne(oQuery, { $setOnInsert: SOI, $set: mod }, { upsert: true }).then(
 							(i) => this.toObject(i) as TC,
 					  )
-					: this.findItemById(doc2save._id);
+					: this.findItemById(new ObjectId(oQuery._id));
 			});
 	}
 
@@ -402,14 +400,13 @@ export class MongoCollection<TC extends BaseEntity> {
 	 *
 	 * @memberof MongoDB
 	 */
-	public async findItemById(uid: ObjectId): Promise<TC | null> {
-		// ensure ObjectID is always an ObjectID even when it was received as string
-		if (typeof uid === 'string' && ObjectId.isValid(uid)) {
-			uid = new ObjectId(uid);
+	public async findItemById(id: ObjectId): Promise<TC | null> {
+		if (!ObjectId.isValid(id)) {
+			throw new Error('Invalid ObjectId <${uid}>');
 		}
 
 		return this.collection
-			.findOne<TC>(this.classFilter({ _id: uid } as UpdateFilter<TC>))
+			.findOne<TC>(this.classFilter({ _id: id } as UpdateFilter<TC>))
 			.then((item) => this.toObject(item) as TC);
 	}
 
@@ -505,9 +502,9 @@ export class MongoCollection<TC extends BaseEntity> {
 			return null;
 		}
 		if (Array.isArray(data)) {
-			return data.map((item) => plainToClass(this.getFactory(item), item));
+			return data.map((item) => EntityFactory.create(this.getFactory(item), item));
 		} else {
-			return plainToClass(this.getFactory(data), data);
+			return EntityFactory.create(this.getFactory(data), data);
 		}
 	}
 
