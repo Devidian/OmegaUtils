@@ -36,7 +36,7 @@ export abstract class BaseEntity implements MongoObject {
 		// void
 	}
 
-	public toPlain(groups: string[] = ['other']): { [key: string]: any } {
+	public toPlain(groups: string[]): Record<string, any> {
 		return classToPlain(this, { groups });
 	}
 }

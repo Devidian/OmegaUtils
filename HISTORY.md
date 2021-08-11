@@ -1,5 +1,10 @@
 ## [Unreleased]
 
+## [0.6.1] - 2021-08-11
+### Fixed
+- EntityFactory now uses group `owner`
+- BaseEntity typing of toPlain changed to Record
+
 ## [0.6.0] - 2021-07-26
 ### Added
 - new decorator `@Default(defaultValue)` for use with classTransformer
