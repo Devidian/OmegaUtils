@@ -16,17 +16,17 @@ const logger = new Logger('mongoClient');
 const connectionString = Environment.getString(EnvVars.DB_CONNECT, null);
 
 if (!connectionString) {
-	logger.error(`ENV:${EnvVars.DB_CONNECT} is not set process will terminate in 30 seconds`);
+	void logger.error(`ENV:${EnvVars.DB_CONNECT} is not set process will terminate in 30 seconds`);
 	setTimeout(() => {
-		logger.info('ByeBye!!');
+		void logger.info('ByeBye!!');
 		process.exit();
 	}, 30 * 1000);
 } else {
-	logger.verbose(`Connecting to MongoDB Server...`);
+	void logger.verbose(`Connecting to MongoDB Server...`);
 
 	MongoClient.connect(connectionString, options)
 		.then((client) => {
-			logger.debug(`MongoDB connection established`);
+			void logger.debug(`MongoDB connection established`);
 			mongoClient.next(client);
 		})
 		.catch((e) => logger.error(e));

@@ -1,4 +1,4 @@
-import { ChangeStream, ChangeStreamOptions, ObjectId } from 'mongodb';
+import { ChangeStream, ChangeStreamOptions, Document, ObjectId, UpdateResult } from 'mongodb';
 import { firstValueFrom } from 'rxjs';
 import { BaseEntity } from '../entities';
 import { ExtendedLogger } from '../tools/ExtendedLogger';
@@ -35,7 +35,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
 		return this.collectionRef.findItems({ _id: { $in: oids } });
 	}
 
-	public softRemoveById(id: string) {
+	public softRemoveById(id: string): Promise<Document | UpdateResult> {
 		if (!ObjectId.isValid(id)) {
 			throw new Error('Property id is not a valid ObjectId');
 		}
@@ -46,7 +46,7 @@ export abstract class BaseRepository<T extends BaseEntity> {
 		if (this.collectionRef) {
 			return this.collectionRef.save(entity);
 		} else {
-			this.logger.warn('save()', 'collection reference not found.');
+			void this.logger.warn('save()', 'collection reference not found.');
 			return Promise.resolve(entity);
 		}
 	}

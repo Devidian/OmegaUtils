@@ -21,7 +21,7 @@ export class RandomTable {
      * @returns {number[]}
      * @memberof RandomTable
      */
-    public static generate(length: number = 128, index: string = "default"): number[] {
+    public static generate(length = 128, index = "default"): number[] {
         const table = (new Array(length)).fill(0).map((v) => Math.random());
         RandomTable.randomMap.set(index, table);
         return table;
@@ -36,7 +36,7 @@ export class RandomTable {
      * @returns {Buffer}
      * @memberof RandomTable
      */
-    public static generateBuffer(length: number = 128, index: string = "default"): Buffer {
+    public static generateBuffer(length = 128, index = "default"): Buffer {
         const table = RandomTable.generate(length, index);
         const b = Buffer.alloc(length * 8);
         table.forEach((n, i) => {
@@ -89,7 +89,7 @@ export class RandomTable {
             const v = number % t.length; // if table is 128 long and we want number 130 we startover
             return t[v];
         } catch (error) {
-            RandomTable.logger.warn(`no table with index ${index} returning Math.random() instead!`);
+            void RandomTable.logger.warn(`no table with index ${index} returning Math.random() instead!`);
             return Math.random();
         }
     }

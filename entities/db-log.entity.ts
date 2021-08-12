@@ -6,7 +6,7 @@ export class DBLogEntity extends BaseEntity {
     @IsNumber()
     public loglevel: number = Loglevel.VERBOSE;
     @IsString()
-    public context: string = "No context set";
+    public context = "No context set";
     @IsString()
     public messages: string[] = [];
     @IsString()

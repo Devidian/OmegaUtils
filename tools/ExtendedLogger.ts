@@ -6,6 +6,7 @@ import { EntityFactory } from '../factories/entity.factory';
 import { Environment } from './Environment';
 import { first } from 'rxjs/operators';
 import { EnvVars } from '../enums';
+import { firstValueFrom } from 'rxjs';
 
 export class ExtendedLogger extends Logger {
 	@DatabaseCollection<DBLogEntity>('logger', DBLogEntity)
@@ -20,9 +21,9 @@ export class ExtendedLogger extends Logger {
 	}
 
 	public async log(level: number, ...messages: any[]): Promise<void> {
-		super.log(level, ...messages);
-		this.logDatabase(level, messages);
-		this.logWebSockets(level, messages);
+		void super.log(level, ...messages);
+		void this.logDatabase(level, messages);
+		void this.logWebSockets(level, messages);
 	}
 
 	private async logDatabase(level: number, messages: any[]): Promise<void> {
@@ -36,8 +37,10 @@ export class ExtendedLogger extends Logger {
 			messages,
 		});
 
-        await ExtendedLogger.collectionRef.$isReady.pipe(first((f) => !!f)).toPromise();
-        ExtendedLogger.collectionRef.save(logEntity);
+		await firstValueFrom(ExtendedLogger.collectionRef.$isReady.pipe(first((f) => !!f)));
+		ExtendedLogger.collectionRef.save(logEntity).catch((e) => {
+			void super.error(e);
+		});
 	}
 
 	private async logWebSockets(level: number, messages: any[]): Promise<void> {

@@ -10,7 +10,7 @@ import {
 	ObjectId,
 	UpdateFilter,
 	UpdateOptions,
-	UpdateResult
+	UpdateResult,
 } from 'mongodb';
 import { Observable } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
@@ -33,7 +33,9 @@ export class MongoCollection<TC extends BaseEntity> {
 	private $dbConnection: Observable<MongoClient>;
 
 	private logger = {
-		error: (...args: any[]) => {},
+		error: (...args: any[]) => {
+			// placeholder
+		},
 	};
 
 	public $collection: Observable<Collection<TC>>;
@@ -48,7 +50,7 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoCollection
 	 */
 	constructor(
-		protected factories: { [key: string]: new (item?: TC) => TC },
+		protected factories: FactoryList<TC>,
 		private collectionName: string,
 		private useClassFilter: boolean = false,
 	) {
@@ -61,7 +63,7 @@ export class MongoCollection<TC extends BaseEntity> {
 		});
 		this.$isReady = this.$collection.pipe(map((c) => !!c));
 		this.defaultFactory = factories[Object.getOwnPropertyNames(factories)[0]];
-		this.init();
+		this.init().catch((e) => this.logger.error(e));
 	}
 
 	private async init() {
@@ -70,7 +72,7 @@ export class MongoCollection<TC extends BaseEntity> {
 		);
 	}
 
-	protected dynamicClass(name: string) {
+	protected dynamicClass(name: string): Factory<TC> {
 		return this.factories[name];
 	}
 
@@ -142,11 +144,11 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoCollection
 	 */
 	protected deepUpdate(key: string, nDoc: { [key: string]: any }, oDoc: { [key: string]: any }): any[] {
-		let result = [];
+		const result = [];
 		for (const prop in nDoc) {
 			try {
-				let upKey = key + '.' + prop;
-				if (nDoc.hasOwnProperty(prop)) {
+				const upKey = key + '.' + prop;
+				if (nDoc[prop] && typeof nDoc[prop] !== 'function') {
 					const isObjectID = ObjectId.isValid(nDoc[prop]); //  && nDoc[prop].length > 12
 					if (!oDoc || !oDoc[prop]) {
 						result.push({ path: upKey, value: nDoc[prop] });
@@ -164,7 +166,7 @@ export class MongoCollection<TC extends BaseEntity> {
 						this.deepUpdate(upKey, nDoc[prop], oDoc[prop]).forEach((element) => {
 							result.push(element);
 						});
-					} else if (!oDoc || !oDoc.hasOwnProperty(prop) || oDoc[prop] === undefined || oDoc[prop] != nDoc[prop]) {
+					} else if (!oDoc || !oDoc[prop] || oDoc[prop] != nDoc[prop]) {
 						// oDoc has no prop with this key or it is unequal but not an object
 						result.push({ path: upKey, value: nDoc[prop] });
 					} else {
@@ -188,9 +190,9 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoCollection
 	 */
 	protected createUpdate(nDoc: { [key: string]: any }, oDoc: { [key: string]: any }): Promise<any> {
-		let target: { [key: string]: any } = {};
+		const target: { [key: string]: any } = {};
 		for (const key in nDoc) {
-			if (nDoc.hasOwnProperty(key)) {
+			if (typeof nDoc[key] !== 'function') {
 				const isObjectID = ObjectId.isValid(nDoc[key]); // && nDoc[key].length > 12;
 				if (!oDoc[key] || isObjectID || types.isDate(nDoc[key])) {
 					if (oDoc[key] != nDoc[key]) {
@@ -205,7 +207,7 @@ export class MongoCollection<TC extends BaseEntity> {
 					this.deepUpdate(key, nDoc[key], oDoc[key]).forEach((element) => {
 						target[element.path] = element.value;
 					});
-				} else if (!oDoc || !oDoc.hasOwnProperty(key) || oDoc[key] === undefined || oDoc[key] != nDoc[key]) {
+				} else if (!oDoc || !oDoc[key] || oDoc[key] != nDoc[key]) {
 					// oDoc has no prop with this key or it is unequal but not an object
 					target[key] = nDoc[key];
 				} else {
@@ -232,7 +234,7 @@ export class MongoCollection<TC extends BaseEntity> {
 		return this.findItemById(new ObjectId(doc2save._id))
 			.then((doc: TC | null) => {
 				if (doc) {
-					let from: any = Object.assign({}, doc2save);
+					const from: any = Object.assign({}, doc2save);
 					delete from._id;
 					return this.createUpdate(from, doc);
 				} else {
@@ -241,10 +243,10 @@ export class MongoCollection<TC extends BaseEntity> {
 				}
 			})
 			.then((to) => {
-				var oQuery: UpdateFilter<TC> = {
+				const oQuery: UpdateFilter<TC> = {
 					_id: new ObjectId(doc2save._id),
 				};
-				let mod = Object.assign({}, to);
+				const mod = Object.assign({}, to);
 
 				delete mod._id;
 				delete mod.createdOn; // ignore value because its set on first save and should never change again
@@ -257,18 +259,19 @@ export class MongoCollection<TC extends BaseEntity> {
 
 				let fields = 0;
 				for (const key in mod) {
-					if (mod.hasOwnProperty(key)) {
+					if (typeof mod[key] !== 'function') {
 						fields++;
 					}
 				}
-				let SOI = Object.assign({}, oQuery, { createdOn: new Date() });
+				const SOI = Object.assign({}, oQuery, { createdOn: new Date() });
 				mod.lastModifiedOn = new Date();
 
-				return fields
-					? this.updateOne(oQuery, { $setOnInsert: SOI, $set: mod }, { upsert: true }).then(
-							(i) => this.toObject(i) as TC,
-					  )
-					: this.findItemById(new ObjectId(oQuery._id));
+				if (fields) {
+					return this.updateOne(oQuery, { $setOnInsert: SOI, $set: mod }, { upsert: true }).then(
+						(i) => this.toObject(i) as TC,
+					);
+				}
+				return this.findItemById(new ObjectId(oQuery._id));
 			});
 	}
 
@@ -283,23 +286,9 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoCollection
 	 */
 	public async updateOne(filter: UpdateFilter<TC>, update: Object, options?: UpdateOptions): Promise<TC | null> {
-		return (
-			this.collection
-				.updateOne(filter, update, options || { upsert: true })
-				// .catch((E) => {
-				// 	if (E.code == 11000) {
-				// 		Logger(911, '[updateOne]', `[${this.collection.collectionName}]`, E.message, '[CATCHED]');
-				// 		// return true;
-				// 	} else {
-				// 		Logger(911, '[updateOne]', `[${this.collection.collectionName}]`, E.message);
-				// 		// throw "Error on update One";
-				// 	}
-				// 	throw E;
-				// })
-				.then(() => {
-					return this.findItem(filter);
-				})
-		);
+		return this.collection.updateOne(filter, update, options || { upsert: true }).then(() => {
+			return this.findItem(filter);
+		});
 	}
 
 	/**
@@ -418,12 +407,8 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoCollection
 	 */
 	public async findItem(Filter: UpdateFilter<TC>): Promise<TC | null> {
-		try {
-			const item = await this.collection.findOne<TC>(this.classFilter(Filter));
-			return this.toObject(item) as TC;
-		} catch (error) {
-			throw error;
-		}
+		const item = await this.collection.findOne<TC>(this.classFilter(Filter));
+		return this.toObject(item) as TC;
 	}
 
 	/**
@@ -448,7 +433,7 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoDB
 	 */
 	public static generateId256(...Items: any[]): string {
-		let input = Items.join('#');
+		const input = Items.join('#');
 		return MongoCollection.hash256(input);
 	}
 

@@ -9,8 +9,8 @@ import { deepStrictEqual } from 'assert';
  * @param {string} property
  * @returns {number}
  */
-export function indexOf(inArray: { [key: string]: any }[], searchTerm: any, property: string): number {
-	for (var i = 0, len = inArray.length; i < len; i++) {
+export function indexOf(inArray: { [key: string]: unknown }[], searchTerm: unknown, property: string): number {
+	for (let i = 0, len = inArray.length; i < len; i++) {
 		try {
 			deepStrictEqual(inArray[i][property], searchTerm, 'Not equal');
 			return i;

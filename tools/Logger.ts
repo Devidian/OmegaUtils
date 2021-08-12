@@ -41,7 +41,7 @@ export class Logger {
 	}
 
 	public async log(level: number, ...messages: any[]): Promise<void> {
-		this.logConsole(level, messages);
+		void this.logConsole(level, messages);
 	}
 
 	protected async logConsole(level: number, messages: any[]): Promise<void> {

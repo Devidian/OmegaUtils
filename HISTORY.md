@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.7.0] - 2021-08-12
+### Fixed
+- All files linted
+
 ## [0.6.1] - 2021-08-11
 ### Fixed
 - EntityFactory now uses group `owner`
