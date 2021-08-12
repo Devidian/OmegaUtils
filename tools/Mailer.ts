@@ -1,14 +1,14 @@
-import { EnvVars } from '../enums';
+import { UtilEnvVars } from '../enums';
 import { Environment } from './Environment';
 import { Logger } from './Logger';
 import sgMail, { ClientResponse } from '@sendgrid/mail';
 
-const apiKey = Environment.getString(EnvVars.MAIL_SERVICE_TOKEN, null);
+const apiKey = Environment.getString(UtilEnvVars.MAIL_SERVICE_TOKEN, null);
 const logger = new Logger('util/Mailer');
 if (!apiKey) {
-	void logger.warn(`ENV: ${EnvVars.MAIL_SERVICE_TOKEN} is not set, sending email not available!`);
+	void logger.warn(`ENV: ${UtilEnvVars.MAIL_SERVICE_TOKEN} is not set, sending email not available!`);
 } else if (!apiKey.startsWith('SG.')) {
-	void logger.warn(`ENV: ${EnvVars.MAIL_SERVICE_TOKEN} is invalid: ${apiKey}, sending email not available`);
+	void logger.warn(`ENV: ${UtilEnvVars.MAIL_SERVICE_TOKEN} is invalid: ${apiKey}, sending email not available`);
 } else {
 	sgMail.setApiKey(apiKey);
 }

@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.8.0] - 2021-08-12
+### Removed
+- EnvVars -> UtilEnvVars, removed elements not used in util
+
 ## [0.7.0] - 2021-08-12
 ### Fixed
 - All files linted

@@ -17,7 +17,7 @@ import { filter, map } from 'rxjs/operators';
 import { types } from 'util';
 import { MongoDB } from '../decorators/mongodb.decorator';
 import { BaseEntity } from '../entities/base.entity';
-import { EnvVars } from '../enums';
+import { UtilEnvVars } from '../enums';
 import { EntityFactory } from '../factories';
 import { Environment } from './Environment';
 
@@ -447,7 +447,7 @@ export class MongoCollection<TC extends BaseEntity> {
 	 * @memberof MongoCollection
 	 */
 	public static hash256(input: string): string {
-		const secret = Environment.getString(EnvVars.APP_SALT, 'd3f4ul75ecr3t');
+		const secret = Environment.getString(UtilEnvVars.APP_SALT, 'd3f4ul75ecr3t');
 		return createHmac('sha256', secret).update(input).digest('hex');
 	}
 

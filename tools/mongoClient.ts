@@ -1,22 +1,22 @@
 import { MongoClient, MongoClientOptions } from 'mongodb';
 import { BehaviorSubject } from 'rxjs';
-import { EnvVars } from '../enums';
+import { UtilEnvVars } from '../enums';
 import { Environment } from './Environment';
 import { Logger } from './Logger';
 
 const options:MongoClientOptions = {	
 	// ssl: false,
-	appName: Environment.getString(EnvVars.DB_APPNAME) || 'NodeApp',
+	appName: Environment.getString(UtilEnvVars.DB_APPNAME) || 'NodeApp',
 };
 
 export const mongoClient = new BehaviorSubject<MongoClient>(null);
 
 const logger = new Logger('mongoClient');
 
-const connectionString = Environment.getString(EnvVars.DB_CONNECT, null);
+const connectionString = Environment.getString(UtilEnvVars.DB_CONNECT, null);
 
 if (!connectionString) {
-	void logger.error(`ENV:${EnvVars.DB_CONNECT} is not set process will terminate in 30 seconds`);
+	void logger.error(`ENV:${UtilEnvVars.DB_CONNECT} is not set process will terminate in 30 seconds`);
 	setTimeout(() => {
 		void logger.info('ByeBye!!');
 		process.exit();

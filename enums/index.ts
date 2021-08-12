@@ -2,4 +2,4 @@ export * from './LOGTAG';
 export * from './Loglevel';
 export * from './console.colors';
 export * from './TimeinMilliseconds';
-export * from './EnvVars';
+export * from './UtilEnvVars';

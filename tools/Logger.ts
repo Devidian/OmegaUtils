@@ -1,13 +1,13 @@
-import { ConsoleColors, EnvVars, Loglevel, LOGTAG } from '../enums';
+import { ConsoleColors, UtilEnvVars, Loglevel, LOGTAG } from '../enums';
 import { Environment } from './Environment';
 
 export class Logger {
 	protected get useColor(): boolean {
-		return Environment.getBoolean(EnvVars.APP_LOG_COLOR);
+		return Environment.getBoolean(UtilEnvVars.APP_LOG_COLOR);
 	}
 
 	protected get currentLevel(): number {
-		return Environment.getNumber(EnvVars.APP_LOG_LEVEL, 0);
+		return Environment.getNumber(UtilEnvVars.APP_LOG_LEVEL, 0);
 	}
 
 	protected get logToConsole(): boolean {

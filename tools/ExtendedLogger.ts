@@ -5,7 +5,7 @@ import { MongoCollection } from './MongoCollection';
 import { EntityFactory } from '../factories/entity.factory';
 import { Environment } from './Environment';
 import { first } from 'rxjs/operators';
-import { EnvVars } from '../enums';
+import { UtilEnvVars } from '../enums';
 import { firstValueFrom } from 'rxjs';
 
 export class ExtendedLogger extends Logger {
@@ -13,11 +13,11 @@ export class ExtendedLogger extends Logger {
 	static collectionRef: MongoCollection<DBLogEntity>;
 
 	private get logToDatabase(): boolean {
-		return Environment.getBoolean(EnvVars.APP_LOG_DB);
+		return Environment.getBoolean(UtilEnvVars.APP_LOG_DB);
 	}
 
 	private get logToWebSockets(): boolean {
-		return Environment.getBoolean(EnvVars.APP_LOG_WS);
+		return Environment.getBoolean(UtilEnvVars.APP_LOG_WS);
 	}
 
 	public async log(level: number, ...messages: any[]): Promise<void> {
