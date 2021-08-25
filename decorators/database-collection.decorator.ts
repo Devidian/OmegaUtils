@@ -2,7 +2,7 @@ import { CreateIndexesOptions, IndexSpecification } from 'mongodb';
 import { of } from 'rxjs';
 import { filter, first } from 'rxjs/operators';
 import { BaseEntity } from '../entities/base.entity';
-import { ExtendedLogger } from '../tools';
+import { Logger } from '../tools';
 import { mongoClient } from '../tools/mongoClient';
 import { MongoCollection } from '../tools/MongoCollection';
 
@@ -12,7 +12,7 @@ export function DatabaseCollection<T extends BaseEntity>(
 	classFilter = false,
 	indices: { spec: IndexSpecification; options?: CreateIndexesOptions }[] = [],
 ): any {
-	const logger = new ExtendedLogger(`DatabaseCollectionDecorator`);
+	const logger = new Logger(`DatabaseCollectionDecorator`);
 	return async (target: Object, propertyKey: string) => {
 		const factories: { [key: string]: new (item?: T) => T } = {};
 		factories[classFactory.name] = classFactory;

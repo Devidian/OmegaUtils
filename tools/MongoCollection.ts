@@ -35,6 +35,7 @@ export class MongoCollection<TC extends BaseEntity> {
 	private logger = {
 		error: (...args: any[]) => {
 			// placeholder
+			console.log(...args);
 		},
 	};
 

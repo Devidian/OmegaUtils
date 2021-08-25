@@ -3,3 +3,4 @@ export * from './Loglevel';
 export * from './console.colors';
 export * from './TimeinMilliseconds';
 export * from './UtilEnvVars';
+export * from './HttpStatusCodes';

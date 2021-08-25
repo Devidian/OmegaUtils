@@ -1,5 +1,9 @@
 ## [Unreleased]
 
+## [0.9.0] - 2021-08-25
+### Added
+- enum for http status codes
+
 ## [0.8.0] - 2021-08-12
 ### Removed
 - EnvVars -> UtilEnvVars, removed elements not used in util
